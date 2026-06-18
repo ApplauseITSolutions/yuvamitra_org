@@ -8,7 +8,12 @@ import { dirname, join } from 'path';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Serve static files from React build
+app.use(express.static(join(__dirname, '../dist')));
 
 // Middleware
 app.use(cors());
@@ -136,6 +141,11 @@ ${message}
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {
