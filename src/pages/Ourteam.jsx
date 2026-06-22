@@ -168,9 +168,14 @@ export default function Ourteam() {
                   {section.title}
                 </h3>
                 
-                <div className={`grid grid-cols-1 sm:grid-cols-2 ${section.cols} gap-8`}>
+                <div className={section.title === "Deputy Program Managers" ? "flex flex-wrap justify-center gap-8 max-w-5xl mx-auto" : `grid grid-cols-1 sm:grid-cols-2 ${section.cols} gap-8`}>
                   {section.members.map((m, i) => (
-                    <MemberCard key={m.name} member={m} index={i} visible={visible} />
+                    <div 
+                      key={m.name} 
+                      className={section.title === "Deputy Program Managers" ? "w-full sm:w-[calc(50%-16px)] lg:w-[calc(33.33%-22px)]" : "w-full"}
+                    >
+                      <MemberCard member={m} index={i} visible={visible} />
+                    </div>
                   ))}
                 </div>
               </div>
