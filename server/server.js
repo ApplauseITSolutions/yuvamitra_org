@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -135,6 +137,56 @@ ${message}
       status: 'error',
       message: 'Failed to send email. Please try again later.'
     });
+  }
+});
+
+// Razorpay Initialization
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_T4eNo30e9W84T9',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '0qiJHEZ5XG24vNbvoo9wjZu1',
+});
+
+// Razorpay Order Creation
+app.post('/api/razorpay/order', async (req, res) => {
+  try {
+    const { amount } = req.body;
+    
+    if (!amount) {
+       return res.status(400).json({ status: 'error', message: 'Amount is required' });
+    }
+
+    const options = {
+      amount: amount * 100, // amount in smallest currency unit (paise)
+      currency: "INR",
+      receipt: "receipt_" + Math.random().toString(36).substring(7),
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json({ status: 'success', order });
+  } catch (error) {
+    console.error('Razorpay order creation error:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to create order' });
+  }
+});
+
+// Razorpay Payment Verification
+app.post('/api/razorpay/verify', (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const secret = process.env.RAZORPAY_KEY_SECRET || '0qiJHEZ5XG24vNbvoo9wjZu1';
+
+    const shasum = crypto.createHmac('sha256', secret);
+    shasum.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+    const digest = shasum.digest('hex');
+
+    if (digest === razorpay_signature) {
+      res.json({ status: 'success', message: 'Payment verified successfully' });
+    } else {
+      res.status(400).json({ status: 'error', message: 'Payment signature verification failed' });
+    }
+  } catch (error) {
+    console.error('Razorpay verification error:', error);
+    res.status(500).json({ status: 'error', message: 'Verification process failed' });
   }
 });
 

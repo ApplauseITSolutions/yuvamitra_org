@@ -13,6 +13,7 @@ import Img10 from "../assets/yuvamitra-team-img/member10.png";
 import Img11 from "../assets/yuvamitra-team-img/member11.png";
 import Img12 from "../assets/yuvamitra-team-img/member12.png";
 import Img13 from "../assets/yuvamitra-team-img/member13.png";
+import Img14 from "../assets/yuvamitra-team-img/Akshay-Photoroom.png";
 
 const FONTS_URL =
   "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;500;600&display=swap";
@@ -29,12 +30,13 @@ const teamSections = [
   },
   {
     title: "Deputy Program Managers",
-    cols: "lg:grid-cols-4",
+    cols: "lg:grid-cols-3 max-w-5xl mx-auto",
     members: [
       { name: "Mr. Atul Surwase", role: "Water Resource Development", img: Img4 },
       { name: "Mr. Hari Daware", role: "Livelihood & Skill Development", img: Img5 },
       { name: "Mr. Chetan Waghulade", role: "Institutional Building & Sustainable Agriculture", img: Img6 },
       { name: "Mr. Sanjay Shinde", role: "Accounts & Finance", img: Img10 },
+      { name: "Mr. Akshay Chandorkar", role: "Monitoring and Evaluation", img: Img14 },
     ]
   },
   {
