@@ -94,13 +94,13 @@ function MemberCard({ member, index, visible }) {
       style={{ transitionDelay: `${delay}s` }}
       className={`relative bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] 
       hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-2
-      transition-all duration-500 ease-out py-6 px-4 flex flex-col items-center text-center
+      transition-all duration-500 ease-out pt-5 pb-4 px-4 flex flex-col items-center text-center w-full h-full
       ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
     >
       {/* Circular Image */}
       <div 
-        style={{ width: "204px", height: "204px", minWidth: "204px", minHeight: "204px" }}
-        className="relative rounded-full overflow-hidden border-2 border-secondary/20 mb-4 shadow-sm"
+        style={{ width: "170px", height: "170px", minWidth: "170px", minHeight: "170px" }}
+        className="relative rounded-full overflow-hidden border-2 border-secondary/20 mb-3 shadow-sm"
       >
         <img
           src={member.img}
@@ -116,11 +116,11 @@ function MemberCard({ member, index, visible }) {
       </div>
 
       {/* Text */}
-      <div className="flex flex-col items-center justify-center flex-grow font-inter w-full">
-        <h3 className="text-primary text-xl font-bold mb-2 tracking-tight font-poppins">
+      <div className="flex flex-col items-center justify-center flex-grow font-inter w-full pb-1">
+        <h3 className="text-primary text-lg font-bold mb-1.5 tracking-tight font-poppins">
           {member.name}
         </h3>
-        <span className="bg-secondary/10 border border-secondary/20 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
+        <span className="bg-secondary/10 border border-secondary/20 text-secondary px-3.5 py-1 rounded-full text-xs font-medium">
           {member.role}
         </span>
       </div>
@@ -164,15 +164,25 @@ export default function Ourteam() {
               <div className="absolute inset-0 bg-gradient-to-b from-black/[0.03] to-transparent -mx-6 lg:-mx-12 rounded-[40px] -z-10 top-0 bottom-0"></div>
               
               <div className="py-6 px-4">
-                <h3 className="text-3xl font-bold text-center text-secondary mb-6 font-poppins">
-                  {section.title}
+                <h3 className="text-3xl font-bold text-center mb-6 font-poppins">
+                  {(() => {
+                    const words = section.title.split(" ");
+                    const firstWord = words[0];
+                    const remaining = words.slice(1).join(" ");
+                    return (
+                      <>
+                        <span className="text-secondary">{firstWord}</span>{" "}
+                        <span className="text-primary">{remaining}</span>
+                      </>
+                    );
+                  })()}
                 </h3>
                 
                 <div className={section.title === "Deputy Program Managers" ? "flex flex-wrap justify-center gap-8 max-w-5xl mx-auto" : `grid grid-cols-1 sm:grid-cols-2 ${section.cols} gap-8`}>
                   {section.members.map((m, i) => (
                     <div 
                       key={m.name} 
-                      className={section.title === "Deputy Program Managers" ? "w-full sm:w-[calc(50%-16px)] lg:w-[calc(33.33%-22px)]" : "w-full"}
+                      className={section.title === "Deputy Program Managers" ? "w-full sm:w-[calc(50%-16px)] lg:w-[calc(33.33%-22px)] flex flex-col" : "w-full flex flex-col"}
                     >
                       <MemberCard member={m} index={i} visible={visible} />
                     </div>
