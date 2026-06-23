@@ -34,8 +34,16 @@ export default function Donate() {
     if (!amount || amount < 1) newErrors.amount = "Minimum donation amount is 1";
     if (!donorData.name.trim()) newErrors.name = "Full Name is required";
     if (!donorData.donorType) newErrors.donorType = "Donor type is required";
-    if (!donorData.email.trim() || !/\S+@\S+\.\S+/.test(donorData.email)) newErrors.email = "Valid Email is required";
-    if (!donorData.phone.trim() || !/^\d{10}$/.test(donorData.phone.replace(/[\s\-\(\)]/g, ''))) newErrors.phone = "Valid 10-digit phone is required";
+    if (!donorData.email.trim() || !/\S+@\S+\.\S+/.test(donorData.email)) newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
+    
+    const phoneClean = donorData.phone.replace(/[\s\-\(\)]/g, '');
+    if (!phoneClean) {
+      newErrors.phone = "Phone number is required.";
+    } else if (phoneClean.length !== 10) {
+      newErrors.phone = "Mobile number must be 10 digits.";
+    } else if (!/^[789]/.test(phoneClean)) {
+      newErrors.phone = "Mobile number must start with 7, 8, or 9.";
+    }
     
     if (amount > 2000) {
       if (!donorData.pan.trim()) newErrors.pan = "PAN No is required";
@@ -144,8 +152,44 @@ export default function Donate() {
   };
 
   const handleChange = (field, value) => {
-    setDonorData({ ...donorData, [field]: value });
-    if (errors[field]) setErrors({ ...errors, [field]: null });
+    let finalValue = value;
+    if (field === 'name') {
+      finalValue = value.replace(/[0-9]/g, '');
+    } else if (field === 'phone') {
+      finalValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+    }
+    
+    setDonorData({ ...donorData, [field]: finalValue });
+    
+    let newErrors = { ...errors };
+    if (field === 'phone') {
+      const phoneClean = finalValue.replace(/[\s\-\(\)]/g, '');
+      if (phoneClean.length > 0 && !/^[789]/.test(phoneClean)) {
+        newErrors.phone = "Mobile number must start with 7, 8, or 9.";
+      } else {
+        newErrors.phone = null;
+      }
+    } else {
+      if (newErrors[field]) newErrors[field] = null;
+    }
+    setErrors(newErrors);
+  };
+
+  const handleBlur = (field) => {
+    let newErrors = { ...errors };
+    if (field === 'phone') {
+      const phoneClean = donorData.phone.replace(/[\s\-\(\)]/g, '');
+      if (phoneClean.length > 0 && phoneClean.length < 10 && /^[789]/.test(phoneClean)) {
+        newErrors.phone = "Mobile number must be 10 digits.";
+      }
+    } else if (field === 'email') {
+      if (donorData.email.trim() && !/\S+@\S+\.\S+/.test(donorData.email)) {
+        newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
+      } else if (!donorData.email.trim()) {
+        newErrors.email = "Email Address is required.";
+      }
+    }
+    setErrors(newErrors);
   };
 
   return (
@@ -212,68 +256,16 @@ export default function Donate() {
               <form onSubmit={handleSubmit} className="space-y-10">
                 
                 {/* 1. Amount Section */}
-                <section>
-                  <div className="flex items-center gap-3 mb-8">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] text-white shadow-md shrink-0">1</span>
-                    <h2 className="text-xl font-poppins text-slate-800">Select Donation Amount</h2>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    {predefinedAmounts.map((amt) => (
-                      <button
-                        key={amt}
-                        type="button"
-                        onClick={() => { setAmount(amt); setIsCustom(false); }}
-                        className={`rounded-xl py-4 text-sm font-bold border-2 transition-all duration-200 ${
-                          amount === amt && !isCustom 
-                          ? "border-secondary bg-blue-50 text-secondary shadow-sm" 
-                          : "border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200"
-                        }`}
-                      >
-                          {amt.toLocaleString('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 2
-      })}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsCustom(true)}
-                    className={`w-full rounded-xl py-4 text-sm font-bold border-2 transition-all duration-200 ${
-                      isCustom ? "border-secondary bg-blue-50 text-secondary" : "border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200"
-                    }`}
-                  >
-                    {isCustom ? "Custom Amount Selected" : "Enter Custom Amount"}
-                  </button>
-                  
-                  {isCustom && (
-                    <div className="mt-5 animate-in slide-in-from-top-4 duration-300">
-                      <div className="relative max-w-md">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-5 font-bold text-slate-400"></span>
-                        <input
-                          type="number"
-                          className="block w-full w-full rounded-lg border-2 border-slate-200 bg-slate-50 py-4 px-6 pl-10 text-[16px] font-medium outline-none focus:border-secondary focus:bg-white transition-all font-inter placeholder:opacity-50"
-                          placeholder="Enter amount (Min 1)"
-                          value={amount}
-                          onChange={(e) => setAmount(Number(e.target.value))}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {errors.amount && <p className="text-red-500 text-xs font-semibold mt-3 ml-1">{errors.amount}</p>}
-                </section>
+                
 
                 <div className="h-px bg-slate-100 w-full"></div>
 
-                {/* 2 & 3. Info Sections */}
+                {/* 1 & 2. Info Sections */}
                 <div className="grid md:grid-cols-2 gap-12">
                   {/* Donor Info */}
                   <div className="space-y-6">
                     <h2 className="text-xl font-poppins text-slate-800 mb-6 flex items-center gap-3">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-poppins text-white shadow-md shrink-0">2</span> 
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-poppins text-white shadow-md shrink-0">1</span> 
                       Personal Information
                     </h2>
                     
@@ -282,8 +274,10 @@ export default function Donate() {
                       <input 
                         className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none focus:bg-white focus:border-secondary transition-all font-inter font-medium text-sm ${errors.name ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}
                         placeholder="Enter your full name" 
+                        value={donorData.name}
                         onChange={(e) => handleChange('name', e.target.value)} 
                       />
+                      {errors.name && <p className="text-red-500 text-[11px] font-medium mt-1 font-inter">{errors.name}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -297,13 +291,15 @@ export default function Donate() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-500 block">Email Address</label>
-                      <input className="w-full w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:bg-white focus:border-secondary transition-all font-inter font-medium text-sm placeholder:opacity-50" placeholder="Enter Your Email Address" onChange={(e) => handleChange('email', e.target.value)} />
+                      <input className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none focus:bg-white focus:border-secondary transition-all font-inter font-medium text-sm placeholder:opacity-50 ${errors.email ? 'border-red-400 bg-red-50' : 'border-slate-200'}`} placeholder="Enter Your Email Address" value={donorData.email} onChange={(e) => handleChange('email', e.target.value)} onBlur={() => handleBlur('email')} />
+                      {errors.email && <p className="text-red-500 text-[11px] font-medium mt-1 font-inter">{errors.email}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-500 block">Phone Number</label>
-                        <input className="w-full w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:bg-white focus:border-secondary transition-all font-inter font-medium text-sm placeholder:opacity-50" placeholder="10-digit number" onChange={(e) => handleChange('phone', e.target.value)} />
+                        <input className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none focus:bg-white focus:border-secondary transition-all font-inter font-medium text-sm placeholder:opacity-50 ${errors.phone ? 'border-red-400 bg-red-50' : 'border-slate-200'}`} placeholder="10-digit number" value={donorData.phone} onChange={(e) => handleChange('phone', e.target.value)} onBlur={() => handleBlur('phone')} />
+                        {errors.phone && <p className="text-red-500 text-[11px] font-medium mt-1 font-inter">{errors.phone}</p>}
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-500 block">PAN Number</label>
@@ -316,7 +312,7 @@ export default function Donate() {
                   {/* Address Info */}
                   <div className="space-y-6">
                     <h2 className="text-xl font-poppins text-slate-800 mb-6 flex items-center gap-3">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-poppins text-white shadow-md shrink-0">3</span> 
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-poppins text-white shadow-md shrink-0">2</span> 
                       Address
                     </h2>
                     
@@ -349,10 +345,10 @@ export default function Donate() {
                   </div>
                 </div>
 
-                {/* 4. Consents & Submit */}
+                {/* 3. Consents & Submit */}
                 <section className="pt-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-bold text-white shadow-md shrink-0">4</span>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-[16px] font-bold text-white shadow-md shrink-0">3</span>
                     <h2 className="text-xl font-poppins text-slate-800">Consent</h2>
                   </div>
                   <div className="rounded-2xl bg-blue-50/50 p-6 border border-blue-100 space-y-4">
@@ -369,13 +365,13 @@ export default function Donate() {
                   </div>
 
                   <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-10 w-full sm:w-auto flex mx-auto items-center justify-center gap-4 bg-primary hover:bg-red-700 hover-bounce text-white font-bold px-7 py-2.5 rounded-full shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed font-poppins"
+                    type="button"
+                    onClick={() => window.open('https://razorpay.me/@yuvamitra', '_blank')}
+                    className="mt-10 w-full sm:w-auto flex mx-auto items-center justify-center gap-4 bg-primary hover:bg-red-700 hover-bounce text-white font-bold px-7 py-2.5 rounded-full shadow-lg shadow-primary/20 transition-all active:scale-95 font-poppins"
                   >
-                    {isSubmitting ? "Processing secure payment..." : `Donate Now`}
+                    Proceed to donate
                   </button>
-                  <p className="text-center text-slate-400 text-[11px] mt-6 font-medium">By clicking "Donate Now", you agree to our Terms of Service and Privacy Policy.</p>
+                  <p className="text-center text-slate-400 text-[11px] mt-6 font-medium">By clicking "Proceed to donate", you agree to our Terms of Service and Privacy Policy.</p>
                 </section>
               </form>
             </div>

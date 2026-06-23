@@ -29,7 +29,7 @@ const teamSections = [
     ]
   },
   {
-    title: "Deputy Program Managers",
+    title: "Deputy General Managers",
     cols: "lg:grid-cols-3 max-w-5xl mx-auto",
     members: [
       { name: "Mr. Atul Surwase", role: "Water Resource Development", img: Img4 },
@@ -178,11 +178,11 @@ export default function Ourteam() {
                   })()}
                 </h3>
                 
-                <div className={section.title === "Deputy Program Managers" ? "flex flex-wrap justify-center gap-8 max-w-5xl mx-auto" : `grid grid-cols-1 sm:grid-cols-2 ${section.cols} gap-8`}>
+                <div className={section.title === "Deputy General Managers" ? "flex flex-wrap justify-center gap-8 max-w-5xl mx-auto" : `grid grid-cols-1 sm:grid-cols-2 ${section.cols} gap-8`}>
                   {section.members.map((m, i) => (
                     <div 
                       key={m.name} 
-                      className={section.title === "Deputy Program Managers" ? "w-full sm:w-[calc(50%-16px)] lg:w-[calc(33.33%-22px)] flex flex-col" : "w-full flex flex-col"}
+                      className={section.title === "Deputy General Managers" ? "w-full sm:w-[calc(50%-16px)] lg:w-[calc(33.33%-22px)] flex flex-col" : "w-full flex flex-col"}
                     >
                       <MemberCard member={m} index={i} visible={visible} />
                     </div>
