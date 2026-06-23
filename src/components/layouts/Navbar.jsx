@@ -11,6 +11,7 @@ export default function Navbar() {
   const [mobileOpenIndex, setMobileOpenIndex] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchVisible, setMobileSearchVisible] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchPanelRef = useRef(null);
   const location = useLocation();
@@ -23,6 +24,11 @@ export default function Navbar() {
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    if (mobileMenuOpen) {
+      window.dispatchEvent(new Event('mobilemenuopen'));
+    } else {
+      window.dispatchEvent(new Event('mobilemenuclose'));
+    }
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenuOpen]);
 
@@ -55,6 +61,7 @@ export default function Navbar() {
   const closeMenu = () => {
     setMobileMenuOpen(false);
     setMobileOpenIndex(null);
+    setTimeout(() => setMobileSearchVisible(true), 300);
   };
 
   const toggleMobileSubMenu = (index) => {
@@ -80,8 +87,8 @@ export default function Navbar() {
       {/* Drawer */}
       <div
         style={{
-          position: "fixed", top: 0, right: 0,
-          height: "100%", width: "100vw",
+          position: "fixed", top: 0, bottom: 0, right: 0,
+          width: "100vw",
           background: "#fff", zIndex: 9999,
           display: "flex", flexDirection: "column",
           boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
@@ -113,14 +120,26 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Search */}
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid #f1f5f9" }}>
-          <div style={{ background: "#f8fafc", borderRadius: 12, overflow: "hidden" }}>
-            <SearchBar onClose={closeMenu} />
+        {mobileSearchVisible && (
+          <div style={{ padding: "12px 20px", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ background: "#f8fafc", borderRadius: 12, overflow: "hidden" }}>
+              <div className="flex justify-between items-center px-4 py-2 bg-slate-50 border-b border-slate-100">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Search</span>
+                <button 
+                  onClick={() => setMobileSearchVisible(false)} 
+                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                  aria-label="Hide Search"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <SearchBar onClose={closeMenu} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Menu Items */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "8px 20px 24px" }}>
+        <div className="mobile-menu-scroll" data-lenis-prevent="true" style={{ flex: 1, overflowY: "scroll", minHeight: 0, padding: "8px 20px 40px" }}>
           {menu.map((item, i) => (
             <div key={i} style={{ borderBottom: "1px solid #f8fafc" }}>
               {!item.children ? (
@@ -162,7 +181,7 @@ export default function Navbar() {
                   <div
                     style={{
                       overflow: "hidden",
-                      maxHeight: mobileOpenIndex === i ? 400 : 0,
+                      maxHeight: mobileOpenIndex === i ? 1000 : 0,
                       opacity: mobileOpenIndex === i ? 1 : 0,
                       transition: "max-height 0.3s ease, opacity 0.25s ease",
                     }}
@@ -192,11 +211,11 @@ export default function Navbar() {
           ))}
 
           {/* Donate button for small phones */}
-          <div style={{ marginTop: 24 }} className="sm:hidden">
+          <div style={{ marginTop: 24 }} className="sm:hidden flex justify-start">
             <Link
               to="/donate"
               onClick={closeMenu}
-              className="flex justify-center items-center w-full py-3 rounded-full bg-primary hover:bg-red-700 hover-bounce text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 font-poppins"
+              className="w-fit px-7 py-2.5 flex justify-center items-center rounded-full bg-primary hover:bg-red-700 hover-bounce text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 font-poppins"
             >
               Donate Now
             </Link>
@@ -300,6 +319,16 @@ export default function Navbar() {
               {/* Dropdown search panel */}
               {searchOpen && (
                 <div className="absolute right-0 top-full mt-2 w-[420px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                  <div className="flex justify-between items-center px-4 py-2 bg-slate-50 border-b border-slate-100">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Search</span>
+                    <button 
+                      onClick={() => setSearchOpen(false)} 
+                      className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                      aria-label="Close Search"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                   <SearchBar onClose={() => setSearchOpen(false)} />
                 </div>
               )}
@@ -327,6 +356,21 @@ export default function Navbar() {
       </header>
 
       {createPortal(mobileDrawer, document.body)}
+      <style>{`
+        .mobile-menu-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .mobile-menu-scroll::-webkit-scrollbar-track {
+          background: transparent; 
+        }
+        .mobile-menu-scroll::-webkit-scrollbar-thumb {
+          background: #cbd5e1; 
+          border-radius: 4px;
+        }
+        .mobile-menu-scroll::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8; 
+        }
+      `}</style>
     </>
   );
 }

@@ -16,7 +16,7 @@ const ContactPage = () => {
     if (!formData.email.trim()) {
       newErrors.email = "Email Address is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email Address is invalid";
+      newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
     }
     if (!formData.subject?.trim()) newErrors.subject = "Subject is required";
     if (!formData.message.trim()) newErrors.message = "Message is required";
@@ -58,10 +58,27 @@ const ContactPage = () => {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    let finalValue = value;
+    if (field === 'name') {
+      finalValue = value.replace(/[0-9]/g, '');
+    }
+
+    setFormData({ ...formData, [field]: finalValue });
     if (errors[field]) {
       setErrors({ ...errors, [field]: null });
     }
+  };
+
+  const handleBlur = (field) => {
+    let newErrors = { ...errors };
+    if (field === 'email') {
+      if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
+      } else if (!formData.email.trim()) {
+        newErrors.email = "Email Address is required";
+      }
+    }
+    setErrors(newErrors);
   };
 
   return (
@@ -111,6 +128,7 @@ const ContactPage = () => {
                     className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none transition-all duration-300 font-medium text-sm placeholder:opacity-50 ${errors.email ? 'border-red-400 focus:border-red-400' : 'border-slate-200 focus:bg-white focus:border-secondary'}`}
                     placeholder="Enter Your Email Address"
                     onChange={(e) => handleChange('email', e.target.value)}
+                    onBlur={() => handleBlur('email')}
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.email}</p>}
                 </div>

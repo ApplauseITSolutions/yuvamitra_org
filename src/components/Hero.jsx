@@ -121,7 +121,7 @@ export default function Hero() {
                 {/* Primary Button */}
                 <Link
                   to="/donate"
-                  className={`${slide.accent} hover:bg-red-700 hover-bounce text-white px-7 py-2.5 text-center rounded-full font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 font-poppins`}
+                  className={`${slide.accent} hover:bg-red-700 hover-bounce text-white px-7 py-2.5 text-center rounded-full font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 font-poppins w-fit mx-auto sm:mx-0`}
                 >
                   {slide.buttonText}
                 </Link>

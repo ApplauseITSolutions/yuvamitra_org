@@ -26,12 +26,15 @@ export default function Careers() {
     if (!formData.email.trim()) {
       newErrors.email = "Email Address is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email Address is invalid";
+      newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
     }
-    if (!formData.phone.trim()) {
+    const phoneClean = formData.phone.replace(/[\s\-\(\)]/g, '');
+    if (!phoneClean) {
       newErrors.phone = "Phone Number is required";
-    } else if (!/^\d{10}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
-      newErrors.phone = "Enter a valid 10-digit phone number";
+    } else if (phoneClean.length !== 10) {
+      newErrors.phone = "Mobile number must be 10 digits.";
+    } else if (!/^[789]/.test(phoneClean)) {
+      newErrors.phone = "Mobile number must start with 7, 8, or 9.";
     }
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
     if (!formData.experience) newErrors.experience = "Experience level is required";
@@ -63,10 +66,44 @@ export default function Careers() {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: null });
+    let finalValue = value;
+    if (field === 'name') {
+      finalValue = value.replace(/[0-9]/g, '');
+    } else if (field === 'phone') {
+      finalValue = value.replace(/[^0-9]/g, '').slice(0, 10);
     }
+    
+    setFormData({ ...formData, [field]: finalValue });
+    
+    let newErrors = { ...errors };
+    if (field === 'phone') {
+      const phoneClean = finalValue.replace(/[\s\-\(\)]/g, '');
+      if (phoneClean.length > 0 && !/^[789]/.test(phoneClean)) {
+        newErrors.phone = "Mobile number must start with 7, 8, or 9.";
+      } else {
+        newErrors.phone = null;
+      }
+    } else {
+      if (newErrors[field]) newErrors[field] = null;
+    }
+    setErrors(newErrors);
+  };
+
+  const handleBlur = (field) => {
+    let newErrors = { ...errors };
+    if (field === 'phone') {
+      const phoneClean = formData.phone.replace(/[\s\-\(\)]/g, '');
+      if (phoneClean.length > 0 && phoneClean.length < 10 && /^[789]/.test(phoneClean)) {
+        newErrors.phone = "Mobile number must be 10 digits.";
+      }
+    } else if (field === 'email') {
+      if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Enter a valid email address (e.g. name@domain.com)";
+      } else if (!formData.email.trim()) {
+        newErrors.email = "Email Address is required";
+      }
+    }
+    setErrors(newErrors);
   };
 
   const handleFileChange = (e) => {
@@ -196,6 +233,7 @@ export default function Careers() {
                       placeholder="Enter Your Email"
                       className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none transition-all duration-300 font-medium text-sm placeholder:opacity-50 ${errors.email ? 'border-red-400 focus:border-red-400' : 'border-transparent focus:bg-white focus:border-secondary'}`}
                       onChange={(e) => handleChange('email', e.target.value)}
+                      onBlur={() => handleBlur('email')}
                     />
                     {errors.email && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.email}</p>}
                   </div>
@@ -212,6 +250,7 @@ export default function Careers() {
                       placeholder="Enter Phone Number"
                       className={`w-full bg-slate-50 border-2 rounded-lg px-4 py-2.5 outline-none transition-all duration-300 font-medium text-sm placeholder:opacity-50 ${errors.phone ? 'border-red-400 focus:border-red-400' : 'border-transparent focus:bg-white focus:border-secondary'}`}
                       onChange={(e) => handleChange('phone', e.target.value)}
+                      onBlur={() => handleBlur('phone')}
                     />
                     {errors.phone && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.phone}</p>}
                   </div>
